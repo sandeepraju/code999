@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2012 by vvs <vvs@vvs.com>                            *
+ *   Copyright (C) 2012 by Sandeep Raju P <sandeep080@gmail.com>             *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *

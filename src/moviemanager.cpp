@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2012 by vvs <vvs@vvs.com>                            *
+ *   Copyright (C) 2012 by Sandeep Raju P <sandeep080@gmail.com>             *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -192,17 +192,32 @@ void moviemanager::fetchAllMovieList(KListWidget* mainMovieList)
         //If the synopsis propoery is not set, then create a qdownloader object
         //and send the data to fetch from imdb
         //and then let that function add the movie to the list
-        if(result.resource().genericLabel().contains(".avi") == true)   //allowing only .avi files
+        if(result.resource().property(Nepomuk::Vocabulary::NFO::fileName()).toString().contains(".avi") == true)   //allowing only .avi files
         {
+            qDebug() << "yes, .avi file!";
             if(result.resource().property(Nepomuk::Vocabulary::NMM::synopsis()).toString().contains("tt") == true)     //checking for synopsis
             {
                 //only .avi and
                 //data already present, so adding to the list
-                mainMovieList->addItem(new QListWidgetItem(result.resource().property(Nepomuk::Vocabulary::NFO::fileName()).toString().remove(".avi")));
+                qDebug() << "yes, contains synopsis";
+
+                //very rarely if title does not exists
+                if(result.resource().property(Nepomuk::Vocabulary::NIE::title()).toString().isEmpty() == true)
+                {
+                    //Title does not exists
+                    qDebug() << "title does not exist, so showing file names";
+                    mainMovieList->addItem(new QListWidgetItem(result.resource().property(Nepomuk::Vocabulary::NFO::fileName()).toString().remove(".avi")));
+                }
+                else
+                {
+                    //Title exists, so displaying the title
+                    qDebug() << "Title exists, showing title of the movie: " << result.resource().property(Nepomuk::Vocabulary::NIE::title()).toString();
+                    mainMovieList->addItem(new QListWidgetItem(result.resource().property(Nepomuk::Vocabulary::NIE::title()).toString()));
+                }
             }
             else
             {
-                //.avi but no data
+                //.avi but no data and tt synopsis
                 qDebug() << "synopsis: " << result.resource().property(Nepomuk::Vocabulary::NMM::synopsis()).toString();
                 //no data, so data needs to be fetched
                 //item will be added to the list later
@@ -218,7 +233,7 @@ void moviemanager::fetchRecoMovieList(KListWidget * recoMovieList)
     //fetch recommended movie list
     //discuss with vijesh
     qDebug() << "fetch Reco Movie List";
-    fetchAllMovieList(recoMovieList);   //temporarily until vijesh gives the module
+    //fetchAllMovieList(recoMovieList);   //temporarily until vijesh gives the module
 }
 
 //All slot definitions
@@ -232,6 +247,7 @@ void moviemanager::slotMovieClicked(QModelIndex currentIndex)
 {
     qDebug() << "movie item clicked";
     QString movieFileName = QString(currentIndex.model()->data(currentIndex).toString());    //extracting the name of the movie
+    qDebug() << movieFileName << " selected";
     //query nepomuk and get the details of the movie and
     //display it in the secondVLayout
 }

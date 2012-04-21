@@ -69,6 +69,9 @@ public:
     virtual ~IMDB();
     void getData();
 
+private:
+    int monthNumber(QString);
+
 private slots:
         void successResponse(QNetworkReply* reply);
 
