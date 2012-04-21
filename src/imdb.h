@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2012 by vvs <vvs@vvs.com>                            *
+ *   Copyright (C) 2012 by Sandeep Raju P <sandeep080@gmail.com>           *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -17,48 +17,20 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA .        *
  ***************************************************************************/
 
-#ifndef moviemanager_H
-#define moviemanager_H
-
-//user defined includes
-#include "imdb.h"
+#ifndef IMDB_H
+#define IMDB_H
 
 //Qt includes
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QLabel>
-#include <QListView>
-#include <QUrl>
-#include<QScrollArea>
-#include <QListView>
-#include <QMessageBox>
-#include <QListView>
-#include <QDockWidget>
-#include <QGridLayout>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
+#include <Qt>
 #include <QDebug>
-#include <QButtonGroup>
-#include <QToolButton>
-#include <QMenu>
-#include <QLabel>
-#include <QSize>
-#include <QFile>
-#include <QIODevice>
-#include <QTextStream>
-#include <QHash>
-#include <QToolButton>
-#include <QComboBox>
-#include <QListWidget>
-#include <QListWidgetItem>
-#include <QModelIndex>
-#include <QModelIndexList>
+#include <QtNetwork>
+#include <qjson/parser.h>
+
+//user defined includes
+#include "nmm/movie.h"
+#include "nfo/video.h"
 
 //KDE includes
-#include <KXmlGuiWindow>
-#include <KDE/KApplication>
-#include <KLineEdit>
-#include <KPushButton>
 #include <KListWidget>
 
 //Nepomuk Includes
@@ -72,61 +44,42 @@
 #include <Nepomuk/Vocabulary/PIMO>
 #include <Nepomuk/Vocabulary/NCO>
 #include <Nepomuk/Vocabulary/NFO>
+#include <Nepomuk/Vocabulary/NMM>
 #include <Nepomuk/Query/AndTerm>
 #include <Nepomuk/Query/OrTerm>
-#include <Nepomuk/Query/ResourceTerm>
 #include <Nepomuk/Vocabulary/NIE>
 #include <Nepomuk/Query/QueryParser>
 #include <Nepomuk/Variant>
 #include <Nepomuk/Tag>
 #include <Nepomuk/Utils/FacetWidget>
 #include <Nepomuk/File>
-#include <Nepomuk/Utils/SimpleResourceModel>
-#include <Nepomuk/Query/Term>
-#include <Nepomuk/Query/Query>
 
 //Soprano includes
 #include <Soprano/QueryResultIterator>
 #include <Soprano/Model>
 #include <Soprano/Vocabulary/NAO>
 
-class QPrinter;
-class KToggleAction;
-class KUrl;
 
-class moviemanager : public KXmlGuiWindow
+class IMDB: public QObject
 {
     Q_OBJECT
-//public methods
+
 public:
-    moviemanager();
-    virtual ~moviemanager();
+    IMDB(Nepomuk::Resource movieResource, KListWidget* list);
+    virtual ~IMDB();
+    void getData();
 
-//private methods
-private:
-    void setupUserInterface();
-    void fetchAllMovieList(KListWidget*);
-    void fetchRecoMovieList(KListWidget*);
-
-//private members
-private:
-    QWidget* mainWindow;
-    QHBoxLayout* mainHLayout;
-    QVBoxLayout* firstVLayout;
-    QVBoxLayout* secondVLayout;
-    QVBoxLayout* thirdVLayout;
-    KLineEdit* searchBar;
-    KListWidget* mainMovieList;
-    //secondVLayout widgets here
-
-    KListWidget* recoMovieList;
-
-
-//private slots
 private slots:
-    void slotSearchBarReturnPressed(QString);
-    void slotMovieClicked(QModelIndex);
+        void successResponse(QNetworkReply* reply);
+
+private:
+     QString* movieName;
+     QString* responseJSON;
+     QString* baseURL;
+     QJson::Parser* parser;
+     QVariantMap parsedResponse;
+     Nepomuk::Resource mResource;
 
 };
 
-#endif // _moviemanager_H_
+#endif // IMDB_H
