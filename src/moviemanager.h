@@ -53,6 +53,7 @@
 #include <QListWidgetItem>
 #include <QModelIndex>
 #include <QModelIndexList>
+#include <QWebView>
 
 //KDE includes
 #include <KXmlGuiWindow>
@@ -107,6 +108,12 @@ private:
     void setupUserInterface();
     void fetchAllMovieList(KListWidget*);
     void fetchRecoMovieList(KListWidget*);
+    void removeAllItems(KListWidget*);
+    void queryGenre(QString);
+    void queryActor(QString);
+    void queryTag(QString);
+    void executeQuery();
+
 
 //private members
 private:
@@ -115,11 +122,24 @@ private:
     QVBoxLayout* firstVLayout;
     QVBoxLayout* secondVLayout;
     QVBoxLayout* thirdVLayout;
+    //firstVLayout widgets here
     KLineEdit* searchBar;
     KListWidget* mainMovieList;
     //secondVLayout widgets here
+    QVBoxLayout* middleInnerVLayout;
+    QWidget* middleInnerWidget;
+    //all variables in secondVLayout
+    //which contain info that should be set
+    //will start with display
+    QWebView* artwork;
 
+
+    //thirdVLayout widgets here
     KListWidget* recoMovieList;
+
+    //nepomuk related objects
+    Nepomuk::Query::Term term;
+
 
 
 //private slots

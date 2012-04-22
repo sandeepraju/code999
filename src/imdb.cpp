@@ -117,6 +117,7 @@ void IMDB::successResponse(QNetworkReply *reply)
         qDebug() << tempDay << tempMonth << tempYear;
         bool ok;
         //QDate* rDate = new QDate(tempDay.toInt(&ok),monthNumber(tempMonth),tempYear.toInt(&ok));
+        //QDate* rDate = new QDate(11,11,2011);
         //this->mResource.setProperty(Nepomuk::Vocabulary::NMM::releaseDate(),rDate);
         //this->mResource.setProperty(Nepomuk::Vocabulary::NMM::releaseDate(),new QDate(2009,5,8));
         //fix this^^^ release date issue
@@ -170,11 +171,11 @@ void IMDB::successResponse(QNetworkReply *reply)
         this->mResource.setProperty(Nepomuk::Vocabulary::NIE::description(),parsedResponse["Plot"].toString());
 
         //adding artwork(Poster)
-        QDownloader* downloader = new QDownloader("/home/sandeep/.moviemanager/", parsedResponse["ID"].toString() + ".jpg");
-        downloader->setFile(parsedResponse["Poster"].toString());
-        Nepomuk::Resource tempImage = Nepomuk::Resource("/home/sandeep/.moviemanager/"+parsedResponse["ID"].toString() +".jpg");
-        tempImage.addType(Nepomuk::Vocabulary::NFO::Image());
-        this->mResource.setProperty(Nepomuk::Vocabulary::NMM::artwork(),tempImage);
+//        QDownloader* downloader = new QDownloader("/home/sandeep/.moviemanager/", parsedResponse["ID"].toString() + ".jpg");
+//        downloader->setFile(parsedResponse["Poster"].toString());
+//        Nepomuk::Resource tempImage = Nepomuk::Resource("/home/sandeep/.moviemanager/"+parsedResponse["ID"].toString() +".jpg");
+//        tempImage.addType(Nepomuk::Vocabulary::NFO::Image());
+//        this->mResource.setProperty(Nepomuk::Vocabulary::NMM::artwork(),tempImage);
 
         //adding rating (G, U/A, PG-13, 18, AV)
         this->mResource.setProperty(Nepomuk::Vocabulary::NMM::audienceRating(),parsedResponse["Rated"].toString());

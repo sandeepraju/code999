@@ -51,6 +51,7 @@
 #include <QListWidgetItem>
 #include <QModelIndex>
 #include <QModelIndexList>
+#include <QScrollBar>
 
 //KDE includes
 #include <KConfigDialog>
@@ -92,7 +93,7 @@
 #include <Nepomuk/Query/Query>
 
 //Soprano includes
-#include <Soprano/QueryResultIterator>
+#include <Soprano/QueryResultIterator>600
 #include <Soprano/Model>
 #include <Soprano/Vocabulary/NAO>
 
@@ -156,6 +157,28 @@ void moviemanager::setupUserInterface()
     }
 
     //adding widgets into secondVLayout
+    secondVLayout->addWidget(new QLabel("<span style='font-size: 20px;'>Movie Details</span>", mainWindow));
+    QScrollArea * scrollArea = new QScrollArea(mainWindow);
+    //scrollArea->setLayout();
+    //scrollArea->setAlignment(Qt::AlignBottom);
+    secondVLayout->addWidget(scrollArea);
+    scrollArea->setWidgetResizable(false);
+    //scrollArea->setVerticalScrollBar(new QScrollBar());
+    middleInnerWidget = new QWidget(mainWindow);
+    //middleInnerWidget->setMaximumHeight(50);
+    scrollArea->setWidget(middleInnerWidget);
+    //secondVLayout->addWidget(middleInnerWidget);
+    middleInnerVLayout = new QVBoxLayout(middleInnerWidget);
+    scrollArea->setLayout(middleInnerVLayout);
+    QLabel* tempTitle = new QLabel("<span style='font-size: 20px;'>Title</span>", middleInnerWidget);
+    tempTitle->setAlignment(Qt::AlignTop);
+    middleInnerVLayout->addWidget(tempTitle);
+
+    artwork = new QWebView(middleInnerWidget);
+    artwork->load(QUrl("file:///home/sandeep/.moviemanager/tt0000000.jpg"));
+    artwork->setMinimumSize(320,474);
+    artwork->setMaximumSize(320,474);
+    middleInnerVLayout->addWidget(artwork);
 
 
     //adding widgets into thirdVLayout
@@ -236,11 +259,92 @@ void moviemanager::fetchRecoMovieList(KListWidget * recoMovieList)
     //fetchAllMovieList(recoMovieList);   //temporarily until vijesh gives the module
 }
 
+void moviemanager::removeAllItems(KListWidget *list)
+{
+    while(list->count() != 0)
+    {
+        qDebug() << "Removing: " << list->itemAt(0,0)->text();
+        delete list->itemAt(0,0);
+    }
+}
+
+void moviemanager::queryGenre(QString gen)
+{
+    //building the term
+     term = term && Nepomuk::Query::ComparisonTerm(Nepomuk::Vocabulary::NMM::genre(), Nepomuk::Query::LiteralTerm(QLatin1String(gen.toLatin1().data())));
+}
+
+void moviemanager::queryActor(QString act)
+{
+    //building the term
+     term = term && Nepomuk::Query::ComparisonTerm(Nepomuk::Vocabulary::NMM::actor(), Nepomuk::Query::LiteralTerm(QLatin1String(act.toLatin1().data())));
+}
+
+void moviemanager::queryTag(QString userTag)
+{
+    //This module is not working
+    //get help from pnh for debugging
+    //pnh code
+    Nepomuk::Tag myTag;
+    myTag.setLabel(userTag);
+    QString query
+       = QString("select distinct ?r where { ?r %1 %2 . ?r a %3 }")
+         .arg( Soprano::Node::resourceToN3(Soprano::Vocabulary::NAO::hasTag()) )
+         .arg( Soprano::Node::resourceToN3(myTag.resourceUri()) )
+         .arg( Soprano::Node::resourceToN3(Nepomuk::Vocabulary::NFO::Video()) );
+
+    QList<Nepomuk::Resource> myResourceList;
+    Soprano::Model *model = Nepomuk::ResourceManager::instance()->mainModel();
+
+    Soprano::QueryResultIterator it = model->executeQuery( query, Soprano::Query::QueryLanguageSparql );
+    while( it.next() ) {
+        qDebug() << "looping";
+       myResourceList << Nepomuk::Resource( it.binding( "r" ).uri() );
+    }
+
+    Q_FOREACH (const Nepomuk::Resource& r, myResourceList)
+    {
+        mainMovieList->addItem(r.property(Nepomuk::Vocabulary::NFO::fileName()).toString());
+        //if(r.tags().contains(new Nepomuk:Tag("video"))) newList.append(r)
+    }
+    //pnh code
+}
+
 //All slot definitions
 void moviemanager::slotSearchBarReturnPressed(QString userInput)
 {
     qDebug() << "search bar return pressed";
     qDebug() << "user entered: " << userInput;
+
+    //remove all items in the list
+    removeAllItems(mainMovieList);
+
+    term =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Video());
+    queryActor(userInput);
+    executeQuery();
+
+}
+
+void moviemanager::executeQuery()
+{
+    Nepomuk::Query::Query currentQuery;
+    currentQuery.setTerm(term);
+    QList<Nepomuk::Query::Result> results = Nepomuk::Query::QueryServiceClient::syncQuery( currentQuery );
+
+    //This is not an efficient way, check pnh's code and optimize this code
+    Q_FOREACH( const Nepomuk::Query::Result& result,results)
+    {
+        if(result.resource().property(Nepomuk::Vocabulary::NIE::title()).toString().isEmpty() == true)
+        {
+            //showing filename
+            mainMovieList->addItem(result.resource().property(Nepomuk::Vocabulary::NFO::fileName()).toString().remove(".avi"));
+        }
+        else
+        {
+            //showing movie title
+            mainMovieList->addItem(result.resource().property(Nepomuk::Vocabulary::NIE::title()).toString());
+        }
+    }
 }
 
 void moviemanager::slotMovieClicked(QModelIndex currentIndex)
